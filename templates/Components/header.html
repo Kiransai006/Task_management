@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - Dashboard</title>
+    <link rel="stylesheet" href="/static/css/index.css">
+</head>
+<body>
+    <header>
+        <h1>Welcome to the Dashboard</h1>
+        <nav>
+            <ul>
+                <li><a href="/index">Home</a></li>
+                <li><a href="/createtaskboard">Create Task Board</a></li>
+                <li><a href="/displayboard">My Task Boards</a></li>
+                <li><a href="/taskboard/sample_id">View Task Board</a></li> 
+                <li><a href="#" id="logout">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+    <script>
+         const logout=document.getElementById('logout');
+         console.log(logout,sessionStorage.getItem('email'));
+         document.getElementById("logout").addEventListener("click", function() {
+            alert("Logging out...");
+            localStorage.removeItem("token")
+            sessionStorage.removeItem('email')
+            window.location.href = "/"; 
+        });
+        //  if(sessionStorage.getItem('email')===null)
+        //  {
+        //     logout.innerHTML='Login';
+        //     console.log('work');
+        //     logout.addEventListener('click',()=>window.location.href='/');
+        //  }
+    </script>
