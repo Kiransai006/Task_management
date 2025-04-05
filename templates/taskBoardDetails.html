@@ -1,0 +1,58 @@
+{% include('Components/header.html') %}
+<main>
+    <h2>Task Board: {{ board.name }}</h2>
+    <p><strong>Description:</strong> {{ board.description }}</p>
+     <div class="boarddetails">
+        <h6>Total Tasks:{{taskDetails.totalTasks}}</h6>
+        <h6>Completed Tasks:{{taskDetails.completedTasks}}</h6>
+         <h6>Active Tasks:{{taskDetails.activeTasks}}</h6>
+     </div>
+    {% if creator %}
+    <h3>Add a User to this Board</h3>
+    <select id="assigned-users">No User Present</select>
+    <button id="add-user-btn">Add User</button>
+
+    <h3>Remove a User from this Board</h3>
+    <select id="assigned-users-remove">
+        <option>No User Present</option>
+    </select>
+    <button id="remove-user-btn">Remove User</button>
+    
+    <h3>Create a New Task</h3>
+    <form id="task-form">
+        
+        <input type="text" id="task-name" placeholder="Title" required>        
+        <input type="date" id="due-date" placeholder="Due Date">
+
+        <input type="hidden" id="taskboard-id" value="{{ board_id }}"> 
+        <button type="submit">Create Task</button>
+    </form>
+    {% endif %}
+    <h3>Tasks in this Board</h3>
+    <div id="tasks-container">
+        {% if tasks %}
+        {% for task in tasks %}
+            <div class="task">
+                <p><strong>Task Name:</strong> <span id="task-name-{{ task.id }}">{{ task.name }}</span></p>
+                <p><strong>Due Date:</strong> <span id="due-date-{{ task.id }}">{{ task.dueDate }}</span></p>
+                <p><strong>Status:</strong> <span id="status-{{ task.id }}">{{ task.completion }}</span></p>
+                {% if task.completion == "Completed" %}
+                <p><strong>Completed At:</strong> <span id="completed-at-{{ task.id }}">{{ task.completedAt }}</span></p>
+            {% endif %}
+            <input type="checkbox" class="completion-checkbox" data-task-id="{{ task.id }}" 
+                {% if task.completion == "Completed" %} checked disabled {% endif %}>
+                <button class="edit-task-btn" data-task-id="{{ task.id }}">Edit</button>
+                 <button class="delete-task-btn" data-task-id="{{ task.id }}">Delete</button>
+            </div>
+        {% endfor %}
+      
+        {% else %}
+        <div class="task">
+            <p>No Tasks Available</p>
+        </div>
+        {% endif %}
+    </div>
+</main>
+
+<script src="/static/js/board_details.js">
+</script>
