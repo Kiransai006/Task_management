@@ -63,5 +63,49 @@ async def get_users(request: Request):
 
     return JSONResponse(content=users)
 
+
+@app.get("/getassignedusers")
+async def GetAssignedUsers(request: Request):
+    token = request.cookies.get("token")
+    
+    if not token:
+        return JSONResponse(content={"message": "Login required"})
+    
+    try:
+        decoded_token = jwt.decode(token, options={"verify_signature": False})
+        user_id = decoded_token["user_id"]
+    except Exception as e:
+        return JSONResponse(content={"message": f"Error decoding token: {str(e)}"})
+    
+    taskBoardDB_ref =taskBoardDB.where("creator", "==", user_id).stream()
+    # users = []
+    
+
+    for board in taskBoardDB_ref:
+        board_data = board.to_dict()
+        print(board_data)
+
+    return JSONResponse(content=board_data)
+
+
+@app.get('/')
+def Login(request: Request):
+    return templates.TemplateResponse('login.html',{'request': request})
+
+@app.get('/register')
+def Register(request: Request):
+    return templates.TemplateResponse('register.html',{'request': request})
+
+
+@app.get("/index")
+async def index(request: Request):
+    token = request.cookies.get("token")  
+
+    if not token:
+        return JSONResponse(content="Login required")
+    return templates.TemplateResponse('index.html', {'request': request})
+
+
+
 if __name__ == "__main__":
     uvicorn.run("app:app", host="0.0.0.0", port=7000, reload=True)
