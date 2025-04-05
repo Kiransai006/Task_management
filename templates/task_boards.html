@@ -1,0 +1,88 @@
+{% include('Components/header.html') %}
+<main>
+    <h2>Your Task Boards</h2>
+    <div id="boards-container">
+        <!-- The boards will be dynamically inserted here -->
+    </div>
+
+    
+</main>
+
+<script>
+async function fetchTaskBoards() {
+    const response = await fetch('/gettaskboards');
+    const data = await response.json();
+
+    const boards = data.boards;
+    const userId = data.user_id;  // Access the logged-in user ID from the response
+
+    const container = document.getElementById('boards-container');
+    container.innerHTML = '';  // Clear the container before adding new boards
+
+    boards.forEach(board => {
+        const boardElement = document.createElement('div');
+        boardElement.classList.add('board');
+        
+        const isOwner = board.creator === userId;  
+
+        boardElement.innerHTML = `
+            <div id="board-${board.id}">
+              
+                <h3>Board Name:${board.name}<span>  ${isOwner ? `<h6 style="color:green">(Creator)</h6>`:''}</span></h3>
+                <p>Board Description:${board.description}</p>
+                <button onclick="viewTaskBoard('${board.id}')">View Board</button>
+                ${isOwner ? `<button onclick="renameBoard('${board.id}')">Rename Board</button>` : ''}
+                ${isOwner ? `<button onclick="deleteBoard('${board.id}')">Delete Board</button>` : ''}
+            </div>
+        `;
+        container.appendChild(boardElement);
+    });
+}
+
+async function renameBoard(boardId) {
+    const newBoardName = prompt("Enter new board name:");
+
+    if (newBoardName) {
+        const response = await fetch(`/rename-board/${boardId}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ name: newBoardName }),
+        });
+
+        const result = await response.json();
+
+        if (result.message === "Board renamed successfully") {
+            document.querySelector(`#board-${boardId} h3`).innerText = newBoardName;
+            alert("Board renamed successfully!");
+        } else {
+            alert(result.message); 
+        }
+    }
+}
+async function deleteBoard(boardId) {
+
+        const response = await fetch(`/delete-board/${boardId}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+
+        const result = await response.json();
+
+        if (result.success ) {
+            alert("Board deleted successfully!");
+            window.location.href="/displayboard"
+        } else {
+            alert(result.message); 
+        }
+    
+}
+function viewTaskBoard(boardId) {
+    window.location.href = `/taskboard/${boardId}`;
+}
+
+fetchTaskBoards();
+</script>
