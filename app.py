@@ -54,7 +54,6 @@ async def get_users(request: Request):
     except Exception as e:
         return JSONResponse(content={"message": f"Error decoding token: {str(e)}"})
     
-    # Fetch all users from Firestore
     users_ref = userDB.stream()
     users = []
     
