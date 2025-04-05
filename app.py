@@ -106,6 +106,53 @@ async def index(request: Request):
     return templates.TemplateResponse('index.html', {'request': request})
 
 
+@app.get("/createtaskboard")
+async def index(request: Request):
+    token = request.cookies.get("token")  
+
+    if not token:
+        return JSONResponse(content="Login required")
+
+    return templates.TemplateResponse('createtaskboard.html', {'request': request})
+
+@app.get("/displayboard")
+async def displayboard(request: Request):
+    token = request.cookies.get("token")  
+
+    if not token:
+        return JSONResponse(content="Login required")
+
+    return templates.TemplateResponse('task_boards.html', {'request': request})
+
+@app.post("/createboardtask")
+async def create_task_board(request: Request):
+    token = request.cookies.get("token")
+    
+    req=await request.json()
+    name=req.get('name')
+    description=req.get('description')
+
+    if not token:
+        return JSONResponse(content={"message": "Login required"})
+    
+    try:
+        decoded_token = jwt.decode(token, options={"verify_signature": False})
+       
+        user_id = decoded_token["user_id"]
+        print('name',decoded_token,user_id)
+    except Exception as e:
+        return JSONResponse(content={"message": f"Error decoding token: {str(e)}"})
+    
+    task_board_data = {
+        "name": name,
+        "description": description,
+        "creator": user_id,
+    }
+    
+    taskBoardDB.add(task_board_data)
+    
+    return JSONResponse(content={"message": "Task board created successfully!"})
+
 
 if __name__ == "__main__":
     uvicorn.run("app:app", host="0.0.0.0", port=7000, reload=True)
