@@ -11,7 +11,7 @@ body {
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background: linear-gradient(to right, #1e3c72, #2a5298);
+    background: linear-gradient(to right, #a02521, #cc38334b);
     color: #fff;
 }
 
@@ -39,7 +39,7 @@ h2 {
     cursor: pointer;
     font-size: 1rem;
     transition: 0.3s;
-    color: #ffcc00;
+    color: white;
 }
 
 .queries h3:hover {
@@ -61,8 +61,8 @@ input {
 }
 
 button {
-    background: #ffcc00;
-    color: #333;
+    background: #a02521;
+    color: white;
     padding: 10px;
     font-size: 1rem;
     border: none;
@@ -72,13 +72,13 @@ button {
 }
 
 button:hover {
-    background: #ffdb4d;
+    background: #cc38334b;
 }
 
 /* Register link */
 h3 span {
     cursor: pointer;
-    color: #ffcc00;
+    color: white;
     transition: 0.3s;
 }
 
