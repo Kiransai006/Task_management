@@ -450,5 +450,45 @@ async def RenameBoard(board_id: str, request: Request):
 
     return JSONResponse(content={"message": "Board renamed successfully"})
 
+
+@app.post("/delete-board/{board_id}")
+async def DeleteBoard(board_id: str, request: Request):
+    token = request.cookies.get("token")
+    if not token:
+        return JSONResponse(content={"message": "Login required"})
+
+    try:
+        decoded_token = jwt.decode(token, options={"verify_signature": False})
+        user_id = decoded_token["user_id"]
+
+    except Exception as e:
+        return JSONResponse(content={"success":False,"message": f"Error decoding token: {str(e)}"})
+
+    task_board_ref = taskBoardDB.document(board_id)
+    task_board = task_board_ref.get()
+    
+
+    
+    if not task_board.exists:
+        return JSONResponse(content={"success":False,"message": "Task board not found"})
+
+    board_data = task_board.to_dict()
+    print(board_data,'task')
+    if board_data["creator"] != user_id:
+        return JSONResponse(content={"success":False,"message": "You are not the owner of this board"})
+        
+    tasks_ref = tasksDB.where("taskboard_id", "==", board_id)
+    tasks = tasks_ref.stream()
+    tasks_list = list(tasks)
+    
+    length=len(tasks_list)
+    if(length>0):
+          return JSONResponse(content={"success": False, "message": "Unable to delete as tasks are present in board!"})
+    
+    task_board_ref.delete()
+
+    return JSONResponse(content={"success": True, "message": "Board deleted successfully"})
+
+
 if __name__ == "__main__":
     uvicorn.run("app:app", host="0.0.0.0", port=7000, reload=True)
