@@ -64,7 +64,8 @@ window.addEventListener('load', (e) => {
       const name = document.getElementById('name').value;
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
-      
+      const errorLabel=document.querySelector('.error');
+
       e.preventDefault();
       createUserWithEmailAndPassword(auth, email, password)
     .then((userCredential) => {
@@ -83,6 +84,7 @@ window.addEventListener('load', (e) => {
         });
       })
       .catch((error) => {
+        errorLabel.innerText=error
         console.log('Error saving user details to Firestore:', error);
       });
     })
