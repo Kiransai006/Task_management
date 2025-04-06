@@ -1,0 +1,13 @@
+{% include('./Components/header.html') %}
+
+<section class="content">
+        <h2 style="color: white;margin-top: 20px;">Hello, <span class="user"></span></h2>
+    </section>
+
+    <script>
+   
+        const user=document.querySelector(".user");
+        user.innerHTML=sessionStorage.getItem("email");
+    </script>
+</body>
+</html>
