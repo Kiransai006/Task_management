@@ -251,6 +251,35 @@ async def view_task_board(board_id: str, request: Request):
         'taskDetails':taskDetails
     })
 
+@app.post("/createtask")
+async def create_task(request: Request):
+    token = request.cookies.get("token")
+    
+    if not token:
+        raise HTTPException(status_code=401, detail="Login required")
+    
+    req = await request.json()
+    task_name = req.get('name')
+    completion = req.get('completion')
+    taskboard_id = req.get('taskboard_id')  
+    due_date = req.get('due_date', None)  
+    
+    print('assinged',task_name,taskboard_id)
+
+    if not task_name or not completion or not taskboard_id:
+        raise HTTPException(status_code=400, detail="Missing required fields")
+    
+    task_data = {
+        "name": task_name,
+        "completion": completion,
+        "taskboard_id": taskboard_id,
+        "dueDate": due_date,
+        "completedAt": "",
+    }
+    task_ref = tasksDB.add(task_data)
+    
+    return {"message": "Task created successfully!"}
+
 
 if __name__ == "__main__":
     uvicorn.run("app:app", host="0.0.0.0", port=7000, reload=True)
