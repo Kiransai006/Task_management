@@ -280,6 +280,45 @@ async def create_task(request: Request):
     
     return {"message": "Task created successfully!"}
 
+@app.post("/remove/{board_id}")
+async def RemoveUserFromBoard(board_id: str, request: Request):
+    token = request.cookies.get("token")
+    if not token:
+        return JSONResponse(content={"message": "Login required"})
+
+    try:
+        decoded_token = id_token.verify_firebase_token(token, requests.Request())
+        current_user_id = decoded_token["user_id"]
+    except Exception as e:
+        return JSONResponse(content={"message": f"Error decoding token: {str(e)}"})
+
+    task_board_ref = taskBoardDB.document(board_id)
+    task_board = task_board_ref.get()
+
+   
+    if not task_board.exists:
+        return JSONResponse(content={"message": "Task board not found"})
+
+    task_board_data = task_board.to_dict()
+
+    if task_board_data["creator"] != current_user_id:
+        return JSONResponse(content={"message": "You are not allowed to remove users from this board"})
+
+    req = await request.json()
+    user_id = req.get("user_id")
+    
+    if not user_id:
+        return JSONResponse(content={"message": "User ID is required"})
+
+    if user_id not in task_board_data.get("users", []):
+        return JSONResponse(content={"message": "User is not part of this board"})
+
+
+    updated_users = [u for u in task_board_data["users"] if u != user_id]
+    task_board_ref.update({"users": updated_users})
+
+    return JSONResponse(content={"message": "User removed successfully from task board"})
+
 
 if __name__ == "__main__":
     uvicorn.run("app:app", host="0.0.0.0", port=7000, reload=True)
