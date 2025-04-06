@@ -154,5 +154,41 @@ async def create_task_board(request: Request):
     return JSONResponse(content={"message": "Task board created successfully!"})
 
 
+@app.get("/gettaskboards")
+async def get_task_boards(request: Request):
+    try:
+        token = request.cookies.get("token")
+    
+        if not token:
+            return JSONResponse(content={"message": "Login required"})
+    
+        try:
+            # decoded_token = id_token.verify_firebase_token(token, requests.Request())
+            decoded = jwt.decode(token, options={"verify_signature": False})
+            user_id =decoded["user_id"]
+            print(f"Decoded user_id: {user_id}")  
+        except Exception as e:
+            return JSONResponse(content={"message": f"Error decoding token: {str(e)}"})
+
+        creator_boards = taskBoardDB.where("creator", "==", user_id).stream()
+        member_boards = taskBoardDB.where("users", "array_contains", user_id).stream()
+
+        boards = {}
+
+        for board in creator_boards:
+            board_data = board.to_dict()
+            print(f"Creator board found: {board.id}, data: {board_data}") 
+            boards[board.id] = {"id": board.id, **board_data}
+
+        for board in member_boards:
+            board_data = board.to_dict()
+            if board.id not in boards:
+                boards[board.id] = {"id": board.id, **board_data}
+
+        return JSONResponse(content={"boards": list(boards.values()), "user_id": user_id})
+
+    except Exception as e:
+        return JSONResponse(content={"message": f"Error: {str(e)}"})
+
 if __name__ == "__main__":
     uvicorn.run("app:app", host="0.0.0.0", port=7000, reload=True)
