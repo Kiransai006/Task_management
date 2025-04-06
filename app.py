@@ -320,5 +320,44 @@ async def RemoveUserFromBoard(board_id: str, request: Request):
     return JSONResponse(content={"message": "User removed successfully from task board"})
 
 
+
+@app.post("/adduser/{board_id}")
+async def add_user_to_board(board_id: str, request: Request):
+    token = request.cookies.get("token")
+    if not token:
+        return JSONResponse(content={"message": "Login required"})
+
+    try:
+        decoded_token = id_token.verify_firebase_token(token, requests.Request())
+        current_user_id = decoded_token["user_id"]
+    except Exception as e:
+        return JSONResponse(content={"message": f"Error decoding token: {str(e)}"})
+
+    task_board_ref = taskBoardDB.document(board_id)
+    task_board = task_board_ref.get()
+
+    if not task_board.exists:
+        return JSONResponse(content={"message": "Task board not found"})
+
+    task_board_data = task_board.to_dict()
+
+    if task_board_data["creator"] != current_user_id:
+        return JSONResponse(content={"message": "You are not allowed to add users to this board"})
+
+    req = await request.json()
+    new_user_id = req.get("user_id")
+
+    if not new_user_id:
+        return JSONResponse(content={"message": "User ID is required"})
+
+    if new_user_id in task_board_data.get("users", []):
+        return JSONResponse(content={"message": "User already added"})
+
+    task_board_ref.update({
+        "users": firestore.ArrayUnion([new_user_id])
+    })
+
+    return JSONResponse(content={"message": "User added successfully"})
+
 if __name__ == "__main__":
     uvicorn.run("app:app", host="0.0.0.0", port=7000, reload=True)
