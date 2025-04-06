@@ -1,5 +1,5 @@
 from fastapi import FastAPI, File, Form, HTTPException, Query, Response, Request
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from google.cloud import firestore
@@ -54,6 +54,7 @@ async def get_users(request: Request):
     except Exception as e:
         return JSONResponse(content={"message": f"Error decoding token: {str(e)}"})
     
+    # Fetch all users from Firestore
     users_ref = userDB.stream()
     users = []
     
@@ -77,6 +78,7 @@ async def GetAssignedUsers(request: Request):
     except Exception as e:
         return JSONResponse(content={"message": f"Error decoding token: {str(e)}"})
     
+    # Fetch all users from Firestore
     taskBoardDB_ref =taskBoardDB.where("creator", "==", user_id).stream()
     # users = []
     
@@ -103,6 +105,7 @@ async def index(request: Request):
 
     if not token:
         return JSONResponse(content="Login required")
+    # await asyncio.sleep(25)
     return templates.TemplateResponse('index.html', {'request': request})
 
 
@@ -152,7 +155,6 @@ async def create_task_board(request: Request):
     taskBoardDB.add(task_board_data)
     
     return JSONResponse(content={"message": "Task board created successfully!"})
-
 
 @app.get("/gettaskboards")
 async def get_task_boards(request: Request):
@@ -251,6 +253,7 @@ async def view_task_board(board_id: str, request: Request):
         'taskDetails':taskDetails
     })
 
+
 @app.post("/createtask")
 async def create_task(request: Request):
     token = request.cookies.get("token")
@@ -320,7 +323,6 @@ async def RemoveUserFromBoard(board_id: str, request: Request):
     return JSONResponse(content={"message": "User removed successfully from task board"})
 
 
-
 @app.post("/adduser/{board_id}")
 async def add_user_to_board(board_id: str, request: Request):
     token = request.cookies.get("token")
@@ -358,7 +360,6 @@ async def add_user_to_board(board_id: str, request: Request):
     })
 
     return JSONResponse(content={"message": "User added successfully"})
-
 
 @app.post("/update-task/{task_id}")
 async def UpdateTask(task_id: str, task_data: dict):
@@ -450,7 +451,6 @@ async def RenameBoard(board_id: str, request: Request):
 
     return JSONResponse(content={"message": "Board renamed successfully"})
 
-
 @app.post("/delete-board/{board_id}")
 async def DeleteBoard(board_id: str, request: Request):
     token = request.cookies.get("token")
@@ -488,7 +488,6 @@ async def DeleteBoard(board_id: str, request: Request):
     task_board_ref.delete()
 
     return JSONResponse(content={"success": True, "message": "Board deleted successfully"})
-
 
 if __name__ == "__main__":
     uvicorn.run("app:app", host="0.0.0.0", port=7000, reload=True)
