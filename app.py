@@ -190,5 +190,67 @@ async def get_task_boards(request: Request):
     except Exception as e:
         return JSONResponse(content={"message": f"Error: {str(e)}"})
 
+@app.get("/taskboard/{board_id}")
+async def view_task_board(board_id: str, request: Request):
+    token = request.cookies.get("token")
+    
+    if not token:
+        return JSONResponse(content={"message": "Login required"})
+    
+    try:
+        decoded_token = id_token.verify_firebase_token(token, requests.Request())
+        user_id = decoded_token["user_id"]
+    except Exception as e:
+        return JSONResponse(content={"message": f"Error decoding token: {str(e)}"})
+
+    # Fetch the task board details by ID
+    task_board_ref = taskBoardDB.document(board_id)
+    task_board = task_board_ref.get()
+    
+    if not task_board.exists:
+        return JSONResponse(content={"message": "Task board not found"})
+    
+    board_data = task_board.to_dict()
+
+    tasks_ref = tasksDB.where("taskboard_id", "==", board_id)
+    tasks = tasks_ref.stream()
+
+    task_list = []
+    isCreator=board_data['creator']==user_id
+
+
+    taskDetails={}   
+    completedTasks=0
+    activeTasks=0
+    for task in tasks:
+        task_data = task.to_dict()
+        if task_data["completion"]=="Completed":
+          completedTasks+=1
+        else: 
+           activeTasks+=1 
+
+        task_list.append({
+            "name": task_data["name"],
+            "completion": task_data["completion"],
+            "dueDate": task_data["dueDate"],
+            "id": task.id,
+            "completedAt": task_data["completedAt"],
+        })
+    
+    taskDetails={
+        'totalTasks':len(task_list),
+        'completedTasks':completedTasks,
+        'activeTasks':activeTasks
+    }    
+    return templates.TemplateResponse('taskBoardDetails.html', {
+        'request': request, 
+        'board': board_data, 
+        'tasks': task_list,
+        'board_id':board_id,
+        'creator':isCreator,
+        'taskDetails':taskDetails
+    })
+
+
 if __name__ == "__main__":
     uvicorn.run("app:app", host="0.0.0.0", port=7000, reload=True)
