@@ -1,0 +1,42 @@
+{% include('Components/header.html') %}
+
+<main>
+    <h2>Create a New Task Board</h2>
+    <form id="create-board-form">
+        <label for="name">Board Name:</label>
+        <input type="text" id="name" name="name" required>
+
+        <label for="description">Description:</label>
+        <textarea id="description" name="description" required></textarea>
+
+        <button type="submit">Create Board</button>
+    </form>
+
+    <p id="message"></p>
+</main>
+
+<script>
+    document.getElementById('create-board-form').addEventListener('submit', async function(event) {
+        event.preventDefault();
+
+        const name = document.getElementById('name').value;
+        const description = document.getElementById('description').value;
+
+        const response = await fetch('/createboardtask', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name, description })
+        });
+
+        const data = await response.json();
+        document.getElementById('message').innerText = data.message;
+
+        if (data.message.includes('success')) {
+            setTimeout(() => {
+                window.location.href = '/displayboard';
+            }, 1000);
+        }
+    });
+</script>
