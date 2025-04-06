@@ -359,5 +359,96 @@ async def add_user_to_board(board_id: str, request: Request):
 
     return JSONResponse(content={"message": "User added successfully"})
 
+
+@app.post("/update-task/{task_id}")
+async def UpdateTask(task_id: str, task_data: dict):
+    try:
+        task_ref = tasksDB.document(task_id)
+        
+        task = task_ref.get()
+        
+        if not task.exists:
+            return JSONResponse(content= {"success":False,"message":f"Task with ID {task_id} not found"})
+        
+        task_ref.update({
+            "completion": task_data.get("completion", "Pending"),
+            "completedAt":firestore.SERVER_TIMESTAMP
+        })
+
+        return JSONResponse(content= {"success":True,"message":"Task updated successfully"})
+
+    except Exception as e:
+        return JSONResponse(content= {"success":False,"message":str(e)})
+    
+@app.delete("/delete-task/{task_id}")
+async def delete_task(task_id: str):
+    try:
+        task_ref = tasksDB.document(task_id)
+        task = task_ref.get()
+
+        if not task.exists:
+            return JSONResponse(content={"success": False, "message": f"Task with ID {task_id} not found"}, status_code=404)
+
+        task_ref.delete()
+        return JSONResponse(content={"success": True, "message": "Task deleted successfully"})
+
+    except Exception as e:
+        return JSONResponse(content={"success": False, "message": str(e)}, status_code=500)
+
+@app.post("/update-task/{task_id}")
+async def EditTask(task_id: str, request: Request):
+    try:
+        task_data = await request.json() 
+
+        task_ref = tasksDB.document(task_id)
+        task = task_ref.get()
+
+        if not task.exists:
+            return JSONResponse({"success": False, "message": "Task not found"})
+
+        update_data = {key: value for key, value in task_data.items() if value is not None}
+
+        if "completion" in update_data and update_data["completion"] == "Completed":
+            update_data["completedAt"] = datetime.now().isoformat()
+
+        task_ref.update(update_data)
+
+        return JSONResponse({"success": True, "message": "Task updated successfully"})
+
+    except Exception as e:
+        return JSONResponse({"success": False, "message": str(e)})
+
+@app.post("/rename-board/{board_id}")
+async def RenameBoard(board_id: str, request: Request):
+    token = request.cookies.get("token")
+    if not token:
+        return JSONResponse(content={"message": "Login required"})
+
+    try:
+        decoded_token = jwt.decode(token, options={"verify_signature": False})
+        user_id = decoded_token["user_id"]
+    except Exception as e:
+        return JSONResponse(content={"message": f"Error decoding token: {str(e)}"})
+
+    task_board_ref = taskBoardDB.document(board_id)
+    task_board = task_board_ref.get()
+    
+    if not task_board.exists:
+        return JSONResponse(content={"message": "Task board not found"})
+    
+    board_data = task_board.to_dict()
+
+    if board_data["creator"] != user_id:
+        return JSONResponse(content={"message": "You are not the owner of this board"})
+    
+    requestName = await request.json()
+    new_name=requestName.get("name")
+    if not new_name:
+        return JSONResponse(content={"message": "New name is required"})
+
+    task_board_ref.update({"name": new_name})
+
+    return JSONResponse(content={"message": "Board renamed successfully"})
+
 if __name__ == "__main__":
     uvicorn.run("app:app", host="0.0.0.0", port=7000, reload=True)
