@@ -57,11 +57,12 @@ async function fetchAssignedUsers() {
     const response = await fetch('/getassignedusers');
     const users = await response.json();
 
+    console.log('users',users);
     const userSelect = document.getElementById('assigned-users-remove');
     if(userSelect)
     {
         userSelect.innerHTML = ''; 
-        if(users && users?.users.length>0)
+        if(users &&  users?.users && users?.users?.length>0)
             {
                 users?.users?.forEach(user => {
                     const option = document.createElement('option');
@@ -163,7 +164,8 @@ document.querySelectorAll(".completion-checkbox").forEach(checkbox => {
                     completedAtElement.innerHTML = `<strong>Completed At:</strong> <span id="completed-at-${taskId}"></span>`;
                     this.parentNode.appendChild(completedAtElement); 
                 }
-
+                window.location.reload();
+                console.log('cmpleted');
                 // document.getElementById(`completed-at-${taskId}`).innerText = new Date().toLocaleString(); 
 
                 this.disabled = true; 
@@ -216,8 +218,9 @@ document.querySelectorAll(".delete-task-btn").forEach(button => {
 
             const result = await response.json();
             if (result.success) {
-                document.getElementById(`task-${taskId}`).remove();
+                // document.getElementById(`task-${taskId}`).remove();
                 alert("Task deleted successfully!");
+                window.location.reload();
             } else {
                 alert("Error deleting task.");
             }
