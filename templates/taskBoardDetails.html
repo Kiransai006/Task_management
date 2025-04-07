@@ -24,6 +24,13 @@
         <input type="text" id="task-name" placeholder="Title" required>        
         <input type="date" id="due-date" placeholder="Due Date">
 
+        <label for="assign-to">Assign To (Ctrl+Click for multiple):</label>
+        <select id="assign-to" multiple>
+            {% for user in board.users %}
+            <option value="{{ user }}">{{ user }}</option>
+            {% endfor %}
+        </select>
+
         <input type="hidden" id="taskboard-id" value="{{ board_id }}"> 
         <button type="submit">Create Task</button>
     </form>

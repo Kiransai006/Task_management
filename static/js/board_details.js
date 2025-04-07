@@ -8,13 +8,16 @@ document.getElementById('task-form')?.addEventListener('submit', async function(
     const completion = document.getElementById('completion');
     const dueDate = document.getElementById('due-date').value;
     const taskboardId = document.getElementById('taskboard-id').value;
+    const assignedSelect = document.getElementById('assign-to');
+    const assignedUsers = Array.from(assignedSelect.selectedOptions).map(option => option.value);
 
     console.log('taskboardid',taskboardId);
     const taskData = {
         name: taskName,
         completion: 'Pending',
         taskboard_id: taskboardId,
-        due_date: dueDate
+        due_date: dueDate,
+        assigned_to: assignedUsers
     };
 
     const response = await fetch('/createtask', {

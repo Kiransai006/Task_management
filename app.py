@@ -244,6 +244,8 @@ async def view_task_board(board_id: str, request: Request):
         'completedTasks':completedTasks,
         'activeTasks':activeTasks
     }    
+
+    print(board_data,'board data')
     return templates.TemplateResponse('taskBoardDetails.html', {
         'request': request, 
         'board': board_data, 
