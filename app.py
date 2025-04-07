@@ -11,7 +11,6 @@ from starlette.middleware.sessions import SessionMiddleware
 from google.oauth2 import id_token
 from google.auth.transport import requests
 from datetime import datetime
-import asyncio
 import jwt
 
 app = FastAPI()
@@ -54,7 +53,6 @@ async def get_users(request: Request):
     except Exception as e:
         return JSONResponse(content={"message": f"Error decoding token: {str(e)}"})
     
-    # Fetch all users from Firestore
     users_ref = userDB.stream()
     users = []
     
@@ -78,7 +76,6 @@ async def GetAssignedUsers(request: Request):
     except Exception as e:
         return JSONResponse(content={"message": f"Error decoding token: {str(e)}"})
     
-    # Fetch all users from Firestore
     taskBoardDB_ref =taskBoardDB.where("creator", "==", user_id).stream()
     # users = []
     
@@ -205,7 +202,6 @@ async def view_task_board(board_id: str, request: Request):
     except Exception as e:
         return JSONResponse(content={"message": f"Error decoding token: {str(e)}"})
 
-    # Fetch the task board details by ID
     task_board_ref = taskBoardDB.document(board_id)
     task_board = task_board_ref.get()
     
