@@ -76,13 +76,13 @@ async def GetAssignedUsers(request: Request):
     except Exception as e:
         return JSONResponse(content={"message": f"Error decoding token: {str(e)}"})
     
-    taskBoardDB_ref =taskBoardDB.where("creator", "==", user_id).stream()
+    taskBoardDB_Data =taskBoardDB.where("creator", "==", user_id).stream()
     # users = []
     
 
-    for board in taskBoardDB_ref:
+    for board in taskBoardDB_Data:
         board_data = board.to_dict()
-        print(board_data)
+
 
     return JSONResponse(content=board_data)
 
@@ -472,15 +472,17 @@ async def DeleteBoard(board_id: str, request: Request):
     task_board = task_board_ref.get()
     
 
-    
     if not task_board.exists:
         return JSONResponse(content={"success":False,"message": "Task board not found"})
 
     board_data = task_board.to_dict()
-    print(board_data,'task')
+  
     if board_data["creator"] != user_id:
         return JSONResponse(content={"success":False,"message": "You are not the owner of this board"})
-        
+
+    if board_data.get("users"): 
+       return JSONResponse(content={"success": False, "message": "Delete assigned users from board"})
+       
     tasks_ref = tasksDB.where("taskboard_id", "==", board_id)
     tasks = tasks_ref.stream()
     tasks_list = list(tasks)
