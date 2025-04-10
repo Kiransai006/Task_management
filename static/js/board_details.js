@@ -19,7 +19,7 @@ document.getElementById('task-form')?.addEventListener('submit', async function(
         due_date: dueDate,
         assigned_to: assignedUsers
     };
-
+    
     const response = await fetch('/createtask', {
         method: 'POST',
         headers: {
@@ -30,11 +30,11 @@ document.getElementById('task-form')?.addEventListener('submit', async function(
 
     const result = await response.json();
     
-    if (result.message === "Task created successfully!") {
+    if (result.success) {
         alert('Task created!');
         window.location.reload();  
     } else {
-        alert('Error creating task');
+        alert(result.message);
     }
 });
 

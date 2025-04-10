@@ -268,12 +268,12 @@ async def create_task(request: Request):
     assigned_users=req.get('assigned_to',[]) 
 
     if not task_name or not completion or not taskboard_id:
-        raise HTTPException(status_code=400, detail="Missing required fields")
-    
+        return {"success":False,"message": "Missing required fields"}
+
     existingTasks = tasksDB.where("taskboard_id","==",taskboard_id).where("name", "==", task_name).stream()
 
     if any(existingTasks): 
-       return {"message": "Task with the same name already exists in this board"}
+       return {"success":False,"message": "Task with the same name already exists in this board"}
 
     task_data = {
         "name": task_name,
@@ -285,7 +285,7 @@ async def create_task(request: Request):
     }
     task_ref = tasksDB.add(task_data)
     
-    return {"message": "Task created successfully!"}
+    return {"success":True,"message": "Task created successfully!"}
 
 @app.post("/remove/{board_id}")
 async def RemoveUserFromBoard(board_id: str, request: Request):
