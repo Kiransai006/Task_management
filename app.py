@@ -270,6 +270,11 @@ async def create_task(request: Request):
     if not task_name or not completion or not taskboard_id:
         raise HTTPException(status_code=400, detail="Missing required fields")
     
+    existingTasks = tasksDB.where("taskboard_id","==",taskboard_id).where("name", "==", task_name).stream()
+
+    if any(existingTasks): 
+       return {"message": "Task with the same name already exists in this board"}
+
     task_data = {
         "name": task_name,
         "completion": completion,

@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+google-cloud-firestore
+google-auth
+requests
+jinja2
+python-multipart
+pyjwt

@@ -24,7 +24,7 @@
         <input type="text" id="task-name" placeholder="Title" required>        
         <input type="date" id="due-date" placeholder="Due Date">
 
-        <label for="assign-to">Assign To (Ctrl+Click for multiple):</label>
+        <label for="assign-to">Assign To and can select multiple:</label>
         <select id="assign-to" multiple>
             {% for user in board.users %}
             <option value="{{ user }}">{{ user }}</option>
